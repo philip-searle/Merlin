@@ -1,0 +1,9 @@
+*.suo
+*.user
+*.orig
+Merlin/bin
+Merlin/obj
+DebugProject/bin
+DebugProject/obj
+HoverRenderer/bin
+HoverRenderer/obj
