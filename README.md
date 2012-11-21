@@ -11,13 +11,31 @@ composed of:
  * A Direct3D visualiser capable of displaying the layout of a Hover maze
    (very rudimentary).
  * A command-line tool that can:
- * * Extract all textures from a .TEX file to a directory.
- * * Export a .SVG image of a .MAZ file with walls and item locations included.
- * * Display a 2-dimensional scrollable, zoomable, view of a .MAZ file (read
+   * Extract all textures from a .TEX file to a directory.
+   * Export a .SVG image of a .MAZ file with walls and item locations included.
+   * Display a 2-dimensional scrollable, zoomable, view of a .MAZ file (read
      only for now).
 
+Usage
+-----
+
+```
+DebugProject --help
+```
+Displays usage instructions.
+
+```
+DebugProject --texturepack Hover\MAZES\TEXT1.TEX --extract Textures
+```
+Extracts all textures from TEXT1.TEX to the directory Textures.
+
+```
+DebugProject --maze Hover\MAZES\MAZE1.MAZ --svg output.svg
+```
+Creates the image file output.svg containing the static geometry and item locations from the specified maze level.
+
 TODO
-====
+----
 
  * Figure out the exact format of the CMerlinBSP data in the maze files.
  * Add serialisation code for CMerlinStatic, CMerlinLocation, and CMerlinBSP classes.
