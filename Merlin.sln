@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Merlin", "Merlin\Merlin.csproj", "{024C28CB-9A1E-4216-B899-C71CB8F2E4D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugProject", "DebugProject\DebugProject.csproj", "{C724CB5C-987F-4852-BB41-3E5CF4A2961D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HoverMod", "HoverMod\HoverMod.csproj", "{C724CB5C-987F-4852-BB41-3E5CF4A2961D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{024C28CB-9A1E-4216-B899-C71CB8F2E4D7} = {024C28CB-9A1E-4216-B899-C71CB8F2E4D7}
 	EndProjectSection

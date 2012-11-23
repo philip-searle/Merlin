@@ -3,7 +3,7 @@
 *.orig
 Merlin/bin
 Merlin/obj
-DebugProject/bin
-DebugProject/obj
+HoverMod/bin
+HoverMod/obj
 HoverRenderer/bin
 HoverRenderer/obj
