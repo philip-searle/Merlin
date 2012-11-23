@@ -20,17 +20,17 @@ Usage
 -----
 
 ```
-DebugProject --help
+HoverMod --help
 ```
 Displays usage instructions.
 
 ```
-DebugProject --texturepack Hover\MAZES\TEXT1.TEX --extract Textures
+HoverMod --texturepack Hover\MAZES\TEXT1.TEX --extract Textures
 ```
 Extracts all textures from TEXT1.TEX to the directory Textures.
 
 ```
-DebugProject --maze Hover\MAZES\MAZE1.MAZ --svg output.svg
+HoverMod --maze Hover\MAZES\MAZE1.MAZ --svg output.svg
 ```
 Creates the image file output.svg containing the static geometry and item locations from the specified maze level.
 
