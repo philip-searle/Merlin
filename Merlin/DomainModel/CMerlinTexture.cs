@@ -13,8 +13,8 @@ namespace Merlin.DomainModel
 {
     public class MipMap
     {
+        public Size ImageDimensionsMinusOne { get; set; }
         public Size ImageDimensions { get; set; }
-        public Size NextLargestPowerOfTwo { get; set; }
         public uint Level { get; set; }
         public byte[] ImageData { get; set; }
 
@@ -22,38 +22,38 @@ namespace Merlin.DomainModel
 
         public void UpdateImage(Bitmap bitmap, int mipmapLevel, bool hasTransparency, int transparentPaletteIndex)
         {
-            if (bitmap.Size != NextLargestPowerOfTwo) throw new ArgumentException("Bitmap size must be " + NextLargestPowerOfTwo);
+            if (bitmap.Size != ImageDimensions) throw new ArgumentException("Bitmap size must be " + ImageDimensions);
             bitmap.RotateFlip(RotateFlipType.Rotate270FlipY);
 
             var pixelSpans = new List<List<PixelSpan>>();
             MemoryStream data = new MemoryStream();
-            byte[] rowData = new byte[NextLargestPowerOfTwo.Width];
-            for (int y = 0; y < NextLargestPowerOfTwo.Height; y++)
+            byte[] rowData = new byte[ImageDimensions.Width];
+            for (int y = 0; y < ImageDimensions.Height; y++)
             {
                 List<PixelSpan> rowSpans = new List<PixelSpan>();
-                BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, y, NextLargestPowerOfTwo.Width, 1), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
-                Marshal.Copy(bitmapData.Scan0, rowData, 0, NextLargestPowerOfTwo.Width);
+                BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, y, ImageDimensions.Width, 1), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
+                Marshal.Copy(bitmapData.Scan0, rowData, 0, ImageDimensions.Width);
                 bitmap.UnlockBits(bitmapData);
 
                 if (hasTransparency)
                 {
                     ushort x = 0;
-                    while (x < NextLargestPowerOfTwo.Width)
+                    while (x < ImageDimensions.Width)
                     {
                         // Skip over transparent pixels
-                        while (x < NextLargestPowerOfTwo.Width && rowData[x] == transparentPaletteIndex) x++;
-                        if (x == NextLargestPowerOfTwo.Width) break;
+                        while (x < ImageDimensions.Width && rowData[x] == transparentPaletteIndex) x++;
+                        if (x == ImageDimensions.Width) break;
 
                         // Start a pixel span
                         ushort spanStart = x;
-                        while (x < NextLargestPowerOfTwo.Width && rowData[x] != transparentPaletteIndex) data.WriteByte(rowData[x++]);
+                        while (x < ImageDimensions.Width && rowData[x] != transparentPaletteIndex) data.WriteByte(rowData[x++]);
                         rowSpans.Add(new PixelSpan((ushort)(spanStart << mipmapLevel), (ushort)((x - 1) << mipmapLevel)));
                     }
                 }
                 else
                 {
-                    data.Write(rowData, 0, NextLargestPowerOfTwo.Width);
-                    rowSpans.Add(new PixelSpan(0, (ushort)((NextLargestPowerOfTwo.Width << mipmapLevel) - 1)));
+                    data.Write(rowData, 0, ImageDimensions.Width);
+                    rowSpans.Add(new PixelSpan(0, (ushort)((ImageDimensions.Width << mipmapLevel) - 1)));
                 }
                 pixelSpans.Add(rowSpans);
             }
@@ -140,8 +140,8 @@ namespace Merlin.DomainModel
                 var nextLargestWidth = archive.DeserialiseUInt16();
                 var imageWidth = archive.DeserialiseUInt16();
 
-                mipmap.ImageDimensions = new Size(imageWidth, imageHeight);
-                mipmap.NextLargestPowerOfTwo = new Size(nextLargestWidth, nextLargestHeight);
+                mipmap.ImageDimensionsMinusOne = new Size(imageWidth, imageHeight);
+                mipmap.ImageDimensions = new Size(nextLargestWidth, nextLargestHeight);
                 mipmap.Level = archive.DeserialiseUInt16();
 
                 var imageDataLength = archive.DeserialiseUInt32();
@@ -177,10 +177,10 @@ namespace Merlin.DomainModel
             archive.SerialiseUInt16((ushort)Mipmaps.Count);
             foreach (var mipmap in Mipmaps)
             {
-                archive.SerialiseUInt16((ushort)mipmap.NextLargestPowerOfTwo.Height);
                 archive.SerialiseUInt16((ushort)mipmap.ImageDimensions.Height);
-                archive.SerialiseUInt16((ushort)mipmap.NextLargestPowerOfTwo.Width);
+                archive.SerialiseUInt16((ushort)mipmap.ImageDimensionsMinusOne.Height);
                 archive.SerialiseUInt16((ushort)mipmap.ImageDimensions.Width);
+                archive.SerialiseUInt16((ushort)mipmap.ImageDimensionsMinusOne.Width);
 
                 archive.SerialiseUInt16((ushort)mipmap.Level);
                 archive.SerialiseUInt32((uint)mipmap.ImageData.Length);

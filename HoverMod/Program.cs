@@ -393,7 +393,7 @@ namespace DebugProject
                     {
                         output.Write("{0,8}: {1:x4}\t{2:x4}\t{3:x4}\t{4:x4}\t{5:x4}\t{6:x8}\n[\n",
                             texture.Name,
-                            mipmap.ImageDimensions.Width, mipmap.ImageDimensions.Height, mipmap.NextLargestPowerOfTwo.Width, mipmap.NextLargestPowerOfTwo.Height, mipmap.Level, mipmap.ImageData.Length);
+                            mipmap.ImageDimensionsMinusOne.Width, mipmap.ImageDimensionsMinusOne.Height, mipmap.ImageDimensions.Width, mipmap.ImageDimensions.Height, mipmap.Level, mipmap.ImageData.Length);
                         foreach (var unknown in mipmap.PixelSpans)
                         {
                             output.Write("\t[ ");
@@ -423,7 +423,7 @@ namespace DebugProject
             {
                 Console.WriteLine("Dumping decal mipmap " + mipmapIndex);
 
-                using (Bitmap bitmap = new Bitmap(mipmap.NextLargestPowerOfTwo.Width, mipmap.NextLargestPowerOfTwo.Height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed))
+                using (Bitmap bitmap = new Bitmap(mipmap.ImageDimensions.Width, mipmap.ImageDimensions.Height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed))
                 {
                     var palette = bitmap.Palette;
                     for (int i = 0; i < palette.Entries.Length; i++)
@@ -434,10 +434,10 @@ namespace DebugProject
                     bitmap.Palette = palette;
 
                     int imageDataPtr = 0;
-                    for (int y = 0; y < mipmap.NextLargestPowerOfTwo.Height; y++)
+                    for (int y = 0; y < mipmap.ImageDimensions.Height; y++)
                     {
-                        BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, y, mipmap.NextLargestPowerOfTwo.Width, 1), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
-                        byte[] row = new byte[mipmap.NextLargestPowerOfTwo.Width];
+                        BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, y, mipmap.ImageDimensions.Width, 1), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+                        byte[] row = new byte[mipmap.ImageDimensions.Width];
 
                         foreach (var span in mipmap.PixelSpans[y])
                         {
