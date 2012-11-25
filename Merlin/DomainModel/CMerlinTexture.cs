@@ -78,12 +78,13 @@ namespace Merlin.DomainModel
     [MfcSerialisable("CMerlinTexture")]
     public class CMerlinTexture : CMerlinObject
     {
-        public bool HasTransparency { get; set; }
-        public List<MipMap> Mipmaps { get; set; }
+        public bool HasTransparency { get; private set; }
+        public List<MipMap> Mipmaps { get; private set; }
 
-        public void UpdateImage(TexturePack containingPack, Bitmap bitmap)
+        public void UpdateImage(TexturePack containingPack, bool hasTransparency, Bitmap bitmap)
         {
             int mipLevel = 0;
+            HasTransparency = hasTransparency;
             foreach (var mipmap in Mipmaps)
             {
                 using (Bitmap scaledBitmap = ScaleBitmap(bitmap, mipLevel))
