@@ -101,7 +101,12 @@ namespace DebugProject
             if (DumpSvg)
             {
                 DumpLevelToSvg();
-            }/*
+            }
+            if (ExtractTextures)
+            {
+                DumpTextures();
+            }
+            /*
             switch (args[0])
             {
                 case "-dumpsvg":
@@ -337,9 +342,9 @@ namespace DebugProject
 
         private const string NAMESPACE = "http://schema.philip-searle.me.uk/Merlin.Texture.1";
 
-        private static void DumpTexturesToTxt(TexturePack texturePack, string directoryPath)
+        private void DumpTextures()
         {
-            Console.WriteLine("Dumping textures to " + directoryPath);
+            Console.WriteLine("Dumping textures to " + OutputDirectory);
 
             XmlWriterSettings xmlSettings = new XmlWriterSettings
             {
@@ -349,7 +354,7 @@ namespace DebugProject
                 NewLineOnAttributes = false,
                 OmitXmlDeclaration = false
             };
-            using (XmlWriter xml = XmlWriter.Create(directoryPath + "\\_textures.xml", xmlSettings))
+            using (XmlWriter xml = XmlWriter.Create(OutputDirectory + "\\_textures.xml", xmlSettings))
             {
                 xml.WriteStartDocument();
                 xml.WriteStartElement("TexturePack", NAMESPACE);
@@ -359,15 +364,15 @@ namespace DebugProject
                 {
                     xml.WriteStartElement("Entry", NAMESPACE);
                     xml.WriteAttributeString("Index", i.ToString());
-                    xml.WriteAttributeString("Red", texturePack.Palette[i].R.ToString());
-                    xml.WriteAttributeString("Green", texturePack.Palette[i].G.ToString());
-                    xml.WriteAttributeString("Blue", texturePack.Palette[i].B.ToString());
+                    xml.WriteAttributeString("Red", TexturePackArchive.Palette[i].R.ToString());
+                    xml.WriteAttributeString("Green", TexturePackArchive.Palette[i].G.ToString());
+                    xml.WriteAttributeString("Blue", TexturePackArchive.Palette[i].B.ToString());
                     xml.WriteEndElement();
                 }
                 xml.WriteEndElement();
 
                 xml.WriteStartElement("Textures", NAMESPACE);
-                foreach (var texture in texturePack.Textures)
+                foreach (var texture in TexturePackArchive.Textures)
                 {
                     xml.WriteStartElement("Texture", NAMESPACE);
                     xml.WriteAttributeString("Name", texture.Name);
@@ -385,34 +390,11 @@ namespace DebugProject
                 }
                 xml.WriteEndElement();
                 xml.Close();
-
-                /*foreach (var texture in texturePack.textures)
-                {
-                    output.WriteLine("\n{0,8}: NEW TEXTURE: transparent = {1}", texture.Name, texture.HasTransparency);
-                    foreach (var mipmap in texture.Mipmaps)
-                    {
-                        output.Write("{0,8}: {1:x4}\t{2:x4}\t{3:x4}\t{4:x4}\t{5:x4}\t{6:x8}\n[\n",
-                            texture.Name,
-                            mipmap.ImageDimensionsMinusOne.Width, mipmap.ImageDimensionsMinusOne.Height, mipmap.ImageDimensions.Width, mipmap.ImageDimensions.Height, mipmap.Level, mipmap.ImageData.Length);
-                        foreach (var unknown in mipmap.PixelSpans)
-                        {
-                            output.Write("\t[ ");
-                            foreach (var unknown2 in unknown)
-                            {
-                                output.Write("{0:x4} {1:x4}, ", unknown2.StartIndex, unknown2.EndIndex);
-                            }
-                            output.WriteLine("]");
-                        }
-                        output.WriteLine("]");
-                    }
-                }
-                output.Close();*/
             }
 
-            foreach (var texture in texturePack.Textures)
+            foreach (var texture in TexturePackArchive.Textures)
             {
-                Console.WriteLine("Skipping texture " + texture.Name + "; unknown1c != 0");
-                DumpTexture(texturePack, texture, directoryPath);
+                DumpTexture(TexturePackArchive, texture, OutputDirectory);
             }
         }
 
