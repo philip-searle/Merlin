@@ -17,94 +17,109 @@ namespace DebugProject
 {
     class Program
     {
-        string processName;
+        static string processName;
         MfcClassRegistry ClassRegistry = new MfcClassRegistry();
 
         bool ShowHelp = false;
-        bool DumpSvg = false;
-        bool ExtractTextures = false;
-        Maze MazeArchive;
-        TexturePack TexturePackArchive;
-        string OutputDirectory = null;
+        string RequestedAction = "";
+        string MazeFile = null;
+        string TexturePackFile = null;
         string SvgFile = null;
+        string OutputDirectory = null;
+        string XmlFile = null;
 
         static void Main(string[] args)
         {
-            new Program(args).Run();
-        }
-
-        private Program(string[] args)
-        {
-            string TexturePackFile = null;
-            string MazeFile = null;
-
             processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
-            ClassRegistry.AutoRegisterClasses(typeof(Maze).Assembly);
-
-            var options = new OptionSet()
-            {
-                {   "h|help", "show this message and exit",
-                    value => ShowHelp = value != null },
-                {   "t|texturepack=", "the texture pack (.TEX) file to load",
-                    value => TexturePackFile = value },
-                {   "m|maze=", "the maze (.MAZ) file to load",
-                    value => MazeFile = value },
-                {   "s|svg=", "output an SVG file showing the maze layout",
-                    value => DumpSvg = value != null },
-                {   "x|extract=", "extract all textures to the specified directory",
-                    value => { ExtractTextures = value != null; OutputDirectory = value; } }
-            };
 
             try
             {
-                options.Parse(args);
+                new Program(args).Run();
             }
             catch (OptionException ex)
             {
                 Console.Write(processName);
                 Console.Write(": ");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(string.Format("Try `{0} --help' for more information.", processName));
+                Console.Write(ex.Message);
+                Console.Write(": while processing option '");
+                Console.Write(ex.OptionName);
+                Console.WriteLine(string.Format("'\nTry `{0} --help' for more information.", processName));
                 return;
             }
+        }
 
-            if (ShowHelp)
+        private Program(string[] args)
+        {
+            ClassRegistry.AutoRegisterClasses(typeof(Maze).Assembly);
+
+            var options = new OptionSet()
+            {
+                {   "h|H|?|help", "show this message and exit",
+                    value => ShowHelp = value != null },
+                {   "a|action=", "specify the action to take.",
+                    value => RequestedAction = value },
+                {   "t|texturepack=", "specify a texture pack (.TEX) file to load/save",
+                    value => TexturePackFile = value },
+                {   "m|maze=", "specify a maze (.MAZ) file to load/save",
+                    value => MazeFile = value },
+                {   "s|svg=", "specify an SVG file to save",
+                    value => SvgFile = value },
+                {   "d|dir|directory=", "specify a directory to load/save to",
+                    value => OutputDirectory = value },
+                {   "x|xml=", "specify an XML file to load",
+                    value => XmlFile = value }
+            };
+
+            options.Parse(args);
+
+            if (ShowHelp || string.IsNullOrWhiteSpace(RequestedAction))
             {
                 Console.WriteLine(string.Format("Usage: {0} [OPTIONS]+", processName));
                 Console.WriteLine("Load, manipulate, and resave a Hover archive file.");
                 Console.WriteLine();
                 Console.WriteLine("Options:");
                 options.WriteOptionDescriptions(Console.Out);
+                Console.WriteLine("\nPossible actions are:");
+                Console.WriteLine("  svg    \tOutput an SVG image of the specified maze");
+                Console.WriteLine("  extract\tExtract all textures from a .TEX file");
+                Console.WriteLine("  combine\tCreate a new .TEX file using the specified XML file as input");
+                Console.WriteLine("  compile\tCompile a new .MAZ file using the specified SVG file as input");
                 return;
             }
+        }
 
-            if (MazeFile != null)
+        private T LoadHoverFile<T>(string filename) where T : MfcObject
+        {
+            using (var stream = new FileStream(filename, FileMode.Open))
             {
-                using (var mazeStream = new FileStream(MazeFile, FileMode.Open))
-                {
-                    var mazeDeserialiser = new MfcDeserialiser(mazeStream, ClassRegistry);
-                    MazeArchive = mazeDeserialiser.DeserialiseObjectNoHeader<Maze>();
-                }
+                return new MfcDeserialiser(stream, ClassRegistry).DeserialiseObjectNoHeader<T>();
             }
-            if (TexturePackFile != null)
+        }
+
+        private void RequireParameter(string parameterValue, string parameterName)
+        {
+            if (string.IsNullOrWhiteSpace(parameterValue))
             {
-                using (var texturePackStream = new FileStream(TexturePackFile, FileMode.Open))
-                {
-                    var texturePackDeserialiser = new MfcDeserialiser(texturePackStream, ClassRegistry);
-                    TexturePackArchive = texturePackDeserialiser.DeserialiseObjectNoHeader<TexturePack>();
-                }
+                throw new OptionException("Action '" + RequestedAction + "' requires a non-empty value", parameterName);
             }
         }
         
         private void Run()
         {
-            if (DumpSvg)
+            if ("svg".Equals(RequestedAction, StringComparison.CurrentCultureIgnoreCase))
             {
-                DumpLevelToSvg();
+                RequireParameter(MazeFile, "maze file");
+                RequireParameter(SvgFile, "SVG file");
+                using (StreamWriter svgStream = new StreamWriter(SvgFile, false, Encoding.UTF8))
+                {
+                    DumpLevelToSvg(LoadHoverFile<Maze>(MazeFile), svgStream);
+                }
             }
-            if (ExtractTextures)
+            if ("extract".Equals(RequestedAction, StringComparison.CurrentCultureIgnoreCase))
             {
-                DumpTextures();
+                RequireParameter(TexturePackFile, "texture pack file");
+                RequireParameter(OutputDirectory, "output directory");
+                DumpTextures(LoadHoverFile<TexturePack>(TexturePackFile), OutputDirectory);
             }
             /*
             switch (args[0])
@@ -175,17 +190,17 @@ namespace DebugProject
             output.Close();
         }
 
-        private void DumpLevelToSvg()
+        private void DumpLevelToSvg(Maze maze, StreamWriter output)
         {
             const double SVG_SCALE_FACTOR = 0.05;
 
-            var x1 = from m in MazeArchive.Geometry select m.X1;
-            var x2 = x1.Union(from m in MazeArchive.Geometry select m.X2);
-            var y1 = from m in MazeArchive.Geometry select m.Y1;
-            var y2 = y1.Union(from m in MazeArchive.Geometry select m.Y2);
-            var z1 = from l in MazeArchive.Locations select l.Z;
-            var z2 = z1.Union(from m in MazeArchive.Geometry select m.BottomZ);
-            var z3 = z2.Union(from m in MazeArchive.Geometry select m.TopZ);
+            var x1 = from m in maze.Geometry select m.X1;
+            var x2 = x1.Union(from m in maze.Geometry select m.X2);
+            var y1 = from m in maze.Geometry select m.Y1;
+            var y2 = y1.Union(from m in maze.Geometry select m.Y2);
+            var z1 = from l in maze.Locations select l.Z;
+            var z2 = z1.Union(from m in maze.Geometry select m.BottomZ);
+            var z3 = z2.Union(from m in maze.Geometry select m.TopZ);
 
             var minX = x2.Min() * SVG_SCALE_FACTOR;
             var maxX = x2.Max() * SVG_SCALE_FACTOR;
@@ -194,7 +209,6 @@ namespace DebugProject
             var minZ = z3.Min() * SVG_SCALE_FACTOR;
             var maxZ = z3.Max() * SVG_SCALE_FACTOR;
 
-            var output = new StreamWriter(SvgFile, false, Encoding.UTF8);
             output.WriteLine("<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' viewBox='{0} {1} {2} {3}' preserveAspectRatio='xMidYMid'>", minX, minY, maxX, maxY);
             output.WriteLine(@"<defs>
 	            <style type='text/css'><![CDATA[
@@ -294,7 +308,7 @@ namespace DebugProject
 	                </p>
                 </foreignObject>", minX - 150, minY + 1);
             int staticIndex = 0;
-            foreach (var merlinStatic in MazeArchive.Geometry)
+            foreach (var merlinStatic in maze.Geometry)
             {
                 string cssClass = merlinStatic.unknown20 == 0 ? "unwall" :
                     merlinStatic.unknown18 == 1 || merlinStatic.unknown19 == 1 ? "decal" :
@@ -308,12 +322,12 @@ namespace DebugProject
                 output.WriteLine("</line>");
             }
             staticIndex = 0;
-            foreach (var merlinStatic in MazeArchive.Geometry)
+            foreach (var merlinStatic in maze.Geometry)
             {
                 output.WriteLine("<!-- Static strings {6:x4}: {0,8}\t{1,8}\t{2,8}\t{3,8}\t{4,8}\t{5,8} -->", merlinStatic.unknown08, merlinStatic.unknown09, merlinStatic.unknown10, merlinStatic.unknown11, merlinStatic.unknown12, merlinStatic.unknown13, staticIndex++);
             }
             staticIndex = 0;
-            foreach (var merlinStatic in MazeArchive.Geometry)
+            foreach (var merlinStatic in maze.Geometry)
             {
                 output.WriteLine("<!-- Static numerics {0:x4}: {1:x4}\t{2:x4}\t{3:x4}\t{4:x4}\t{5:x2}\t{6:x2}\t{7:x2}\t{8:x4}\t{9:x2}\t{10:x4}\t{11:x4}\t -->", staticIndex++,
                     merlinStatic.BottomZ, merlinStatic.TopZ, merlinStatic.unknown16, merlinStatic.unknown17, merlinStatic.unknown18,
@@ -321,7 +335,7 @@ namespace DebugProject
                     merlinStatic.unknown24);
             }
 
-            foreach (var location in MazeArchive.Locations)
+            foreach (var location in maze.Locations)
             {
                 output.WriteLine("<g class='location-{0}'>", location.Name.Split(new char[] { '_' })[0]);
                 output.WriteLine("\t<use xlink:href='#facing-{0}' x='{1}' y='{2}' />", location.FacingDirection.ToString(), location.X / 10, location.Y / 10); 
@@ -331,7 +345,7 @@ namespace DebugProject
             }
 
             int bspIndex = 0;
-            foreach (var bsp in MazeArchive.Bsp)
+            foreach (var bsp in maze.Bsp)
             {
                 output.WriteLine("<!-- BSP {4:x4}: {0:x4}\t{1:x4}\t{2:x4}\t{3:x4} -->", bsp.unknown01, bsp.unknown02, bsp.unknown03, bsp.unknown04, bspIndex++);
             }
@@ -342,9 +356,9 @@ namespace DebugProject
 
         private const string NAMESPACE = "http://schema.philip-searle.me.uk/Merlin.Texture.1";
 
-        private void DumpTextures()
+        private void DumpTextures(TexturePack texturePack, String outputDirectory)
         {
-            Console.WriteLine("Dumping textures to " + OutputDirectory);
+            Console.WriteLine("Dumping textures to " + outputDirectory);
 
             XmlWriterSettings xmlSettings = new XmlWriterSettings
             {
@@ -354,7 +368,7 @@ namespace DebugProject
                 NewLineOnAttributes = false,
                 OmitXmlDeclaration = false
             };
-            using (XmlWriter xml = XmlWriter.Create(OutputDirectory + "\\_textures.xml", xmlSettings))
+            using (XmlWriter xml = XmlWriter.Create(outputDirectory + "\\_textures.xml", xmlSettings))
             {
                 xml.WriteStartDocument();
                 xml.WriteStartElement("TexturePack", NAMESPACE);
@@ -364,15 +378,15 @@ namespace DebugProject
                 {
                     xml.WriteStartElement("Entry", NAMESPACE);
                     xml.WriteAttributeString("Index", i.ToString());
-                    xml.WriteAttributeString("Red", TexturePackArchive.Palette[i].R.ToString());
-                    xml.WriteAttributeString("Green", TexturePackArchive.Palette[i].G.ToString());
-                    xml.WriteAttributeString("Blue", TexturePackArchive.Palette[i].B.ToString());
+                    xml.WriteAttributeString("Red", texturePack.Palette[i].R.ToString());
+                    xml.WriteAttributeString("Green", texturePack.Palette[i].G.ToString());
+                    xml.WriteAttributeString("Blue", texturePack.Palette[i].B.ToString());
                     xml.WriteEndElement();
                 }
                 xml.WriteEndElement();
 
                 xml.WriteStartElement("Textures", NAMESPACE);
-                foreach (var texture in TexturePackArchive.Textures)
+                foreach (var texture in texturePack.Textures)
                 {
                     xml.WriteStartElement("Texture", NAMESPACE);
                     xml.WriteAttributeString("Name", texture.Name);
@@ -392,13 +406,13 @@ namespace DebugProject
                 xml.Close();
             }
 
-            foreach (var texture in TexturePackArchive.Textures)
+            foreach (var texture in texturePack.Textures)
             {
-                DumpTexture(TexturePackArchive, texture, OutputDirectory);
+                DumpTexture(texturePack, texture, OutputDirectory);
             }
         }
 
-        private static void DumpTexture(TexturePack texturePack, CMerlinTexture texture, string directoryPath)
+        private void DumpTexture(TexturePack texturePack, CMerlinTexture texture, string directoryPath)
         {
             int mipmapIndex = 0;
             foreach (var mipmap in texture.Mipmaps)
@@ -432,7 +446,7 @@ namespace DebugProject
                         Marshal.Copy(row, 0, bitmapData.Scan0, row.Length);
                         bitmap.UnlockBits(bitmapData);
                     }
-                    //if (imageDataPtr != mipmap.ImageData.Length) throw new InvalidOperationException();
+                    if (imageDataPtr != mipmap.ImageData.Length) throw new InvalidOperationException();
 
                     // Convert from column-major bottom-up Hover format to human-editable foramt
                     bitmap.RotateFlip(RotateFlipType.Rotate90FlipX);
@@ -441,6 +455,11 @@ namespace DebugProject
                     mipmapIndex++;
                 }
             }
+        }
+
+        private void CombineTexturesToFile()
+        {
+            /* TODO */
         }
     }
 }
