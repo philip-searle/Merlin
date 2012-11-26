@@ -121,6 +121,12 @@ namespace DebugProject
                 RequireParameter(OutputDirectory, "output directory");
                 DumpTextures(LoadHoverFile<TexturePack>(TexturePackFile), OutputDirectory);
             }
+            if ("combine".Equals(RequestedAction, StringComparison.CurrentCultureIgnoreCase))
+            {
+                RequireParameter(TexturePackFile, "texture pack file");
+                RequireParameter(XmlFile, "XML file");
+                CombineTexturesToFile(XmlFile, TexturePackFile);
+            }
             /*
             switch (args[0])
             {
@@ -457,9 +463,18 @@ namespace DebugProject
             }
         }
 
-        private void CombineTexturesToFile()
+        private void CombineTexturesToFile(string xmlFile, string texturePackFile)
         {
-            /* TODO */
+            XmlDocument xmlDocument = new XmlDocument();
+            XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(xmlDocument.NameTable);
+            xmlNamespaceManager.AddNamespace("t", NAMESPACE);
+            xmlDocument.Load(xmlFile);
+
+            foreach (var paletteEntry in xmlDocument.SelectNodes("/t:TexturePack/t:Palette/t:Entry", xmlNamespaceManager).OfType<XmlNode>())
+            {
+
+                Console.WriteLine(paletteEntry.Attributes["Red"].InnerText);
+            }
         }
     }
 }
