@@ -25,14 +25,18 @@ HoverMod --help
 Displays usage instructions.
 
 ```
-HoverMod --texturepack Hover\MAZES\TEXT1.TEX --extract Textures
+HoverMod --action extract --texturepack c:\Hover\MAZES\TEXT1.TEX --directory c:\Textures
 ```
 Extracts all textures from TEXT1.TEX to the directory Textures.
 
 ```
-HoverMod --maze Hover\MAZES\MAZE1.MAZ --svg output.svg
+HoverMod --action svg --maze c:\Hover\MAZES\MAZE1.MAZ --svg c:\output.svg
 ```
-Creates the image file output.svg containing the static geometry and item locations from the specified maze level.
+Creates the image file c:\output.svg containing the static geometry and item locations from the specified maze level.
+````
+HoverMod --action combine --xml c:\Textures\_textures.xml --texturepack c:\Hover\MAZES\TEXT1.TEX
+````
+Combines all the textures named in _textures.xml into a new texture pack TEXT1.TEX
 
 TODO
 ----
