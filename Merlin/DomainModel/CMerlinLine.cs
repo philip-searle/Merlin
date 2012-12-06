@@ -33,5 +33,17 @@ namespace Merlin.DomainModel
 
             archive.DeserialiseObjectNoHeader<TrailingBytes>();
         }
+
+        public override void Serialise(MfcSerialiser archive)
+        {
+            base.Serialise(archive);
+
+            archive.SerialiseUInt16(X1);
+            archive.SerialiseUInt16(Y1);
+            archive.SerialiseUInt16(X2);
+            archive.SerialiseUInt16(Y2);
+
+            archive.SerialiseObjectNoHeader(new TrailingBytes());
+        }
     }
 }

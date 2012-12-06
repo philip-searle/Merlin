@@ -96,6 +96,14 @@ namespace DebugProject
             }
         }
 
+        private void SaveHoverFile<T>(string filename, T data) where T : MfcObject
+        {
+            using (var stream = new FileStream(filename, FileMode.Create))
+            {
+                new MfcSerialiser(stream, ClassRegistry).SerialiseObjectNoHeader(data);
+            }
+        }
+
         private void RequireParameter(string parameterValue, string parameterName)
         {
             if (string.IsNullOrWhiteSpace(parameterValue))
@@ -126,6 +134,10 @@ namespace DebugProject
                 RequireParameter(TexturePackFile, "texture pack file");
                 RequireParameter(XmlFile, "XML file");
                 CombineTexturesToFile(XmlFile, TexturePackFile);
+            }
+            if ("compile".Equals(RequestedAction, StringComparison.CurrentCultureIgnoreCase))
+            {
+                CompileMazeToFile(@"C:\Users\Philip\Desktop\HoverGame\HOVER\MAZES\SMALL.MAZ", MazeFile);
             }
             /*
             switch (args[0])
@@ -456,7 +468,7 @@ namespace DebugProject
 
                     // Convert from column-major bottom-up Hover format to human-editable foramt
                     bitmap.RotateFlip(RotateFlipType.Rotate90FlipX);
-                    bitmap.Save(directoryPath + "\\" + texture.Name + "_MIPMAP" + mipmapIndex + ".gif", ImageFormat.Gif);
+                    bitmap.Save(directoryPath + "\\" + texture.Name + "_MIPMAP_" + mipmap.Level + ".gif", ImageFormat.Gif);
 
                     mipmapIndex++;
                 }
@@ -465,16 +477,56 @@ namespace DebugProject
 
         private void CombineTexturesToFile(string xmlFile, string texturePackFile)
         {
+            Console.WriteLine("Creating {0} from XML file {1}:", texturePackFile, xmlFile);
+
             XmlDocument xmlDocument = new XmlDocument();
             XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(xmlDocument.NameTable);
             xmlNamespaceManager.AddNamespace("t", NAMESPACE);
             xmlDocument.Load(xmlFile);
 
+            Console.WriteLine("Processing palette...");
+            TexturePack texturePack = new TexturePack();
+            Color[] palette = new Color[TexturePack.PALETTE_ENTRIES];
             foreach (var paletteEntry in xmlDocument.SelectNodes("/t:TexturePack/t:Palette/t:Entry", xmlNamespaceManager).OfType<XmlNode>())
             {
-
-                Console.WriteLine(paletteEntry.Attributes["Red"].InnerText);
+                palette[int.Parse(paletteEntry.Attributes["Index"].Value)] = Color.FromArgb(
+                    int.Parse(paletteEntry.Attributes["Red"].Value),
+                    int.Parse(paletteEntry.Attributes["Green"].Value),
+                    int.Parse(paletteEntry.Attributes["Blue"].Value));
             }
+            texturePack.Palette = palette.ToArray();
+
+            List<CMerlinTexture> textures = new List<CMerlinTexture>();
+            foreach (var textureDef in xmlDocument.SelectNodes("/t:TexturePack/t:Textures/t:Texture", xmlNamespaceManager).OfType<XmlNode>())
+            {
+                string textureName = textureDef.Attributes["Name"].Value;
+                Console.WriteLine("Processing texture {0}...", textureName);
+                var mipmapDef = textureDef.SelectSingleNode("t:MipMap", xmlNamespaceManager);
+                string bitmapPath = Path.Combine(Path.GetDirectoryName(xmlFile), mipmapDef.Attributes["Data"].Value);
+                using (Bitmap bitmap = new Bitmap(bitmapPath))
+                {
+                    CMerlinTexture texture = new CMerlinTexture();
+                    texture.Name = textureName;
+                    texture.UpdateImage(
+                        texturePack,
+                        bool.Parse(textureDef.Attributes["HasTransparency"].Value),
+                        bitmap);
+                    textures.Add(texture);
+                }
+            }
+            texturePack.Textures = textures;
+
+            Console.WriteLine("Saving to {0}", texturePackFile);
+            SaveHoverFile(texturePackFile, texturePack);
+        }
+
+        private void CompileMazeToFile(string inputFile, string outputFile)
+        {
+            Console.WriteLine("Compiling {0} to {1}:", inputFile, outputFile);
+            var maze = LoadHoverFile<Maze>(inputFile);
+
+            Console.WriteLine("Saving to {0}", outputFile);
+            SaveHoverFile(outputFile, maze);
         }
     }
 }
