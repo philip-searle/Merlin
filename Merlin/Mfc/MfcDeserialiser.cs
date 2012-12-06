@@ -260,7 +260,7 @@ namespace Merlin.Mfc
             {
                 // Subsequent objects are missing the runtime class header but have a word preceding them
                 // that looks like an invalid runtime classs header.
-                archive.DeserialiseUInt16();
+                uint test = archive.DeserialiseUInt16();
                 result.Add(archive.DeserialiseObjectNoHeader<T>());
             }
 

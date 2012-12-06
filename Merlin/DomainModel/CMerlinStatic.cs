@@ -49,5 +49,28 @@ namespace Merlin.DomainModel
             unknown23 = archive.DeserialiseUInt16();
             unknown24 = archive.DeserialiseUInt16();
         }
+
+        public override void Serialise(MfcSerialiser archive)
+        {
+            base.Serialise(archive);
+
+            archive.SerialiseString(unknown08);
+            archive.SerialiseString(unknown09);
+            archive.SerialiseString(unknown10);
+            archive.SerialiseString(unknown11);
+            archive.SerialiseString(unknown12);
+            archive.SerialiseString(unknown13);
+            archive.SerialiseUInt16(BottomZ);
+            archive.SerialiseUInt16(TopZ);
+            archive.SerialiseUInt16(unknown16);
+            archive.SerialiseUInt16(unknown17);
+            archive.SerialiseByte(unknown18);
+            archive.SerialiseByte(unknown19);
+            archive.SerialiseByte(unknown20);
+            archive.SerialiseUInt16(unknown21);
+            archive.SerialiseByte(unknown22);
+            archive.SerialiseUInt16(unknown23);
+            archive.SerialiseUInt16(unknown24);
+        }
     }
 }

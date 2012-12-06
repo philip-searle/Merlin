@@ -54,7 +54,7 @@ namespace Merlin.DomainModel
         public override void Serialise(MfcSerialiser archive)
         {
             archive.SerialiseUInt16(MinY);
-            archive.SerialiseUInt16(MinY);
+            archive.SerialiseUInt16(MinX);
             archive.SerialiseUInt16(MaxX);
             archive.SerialiseUInt16(MaxY);
 

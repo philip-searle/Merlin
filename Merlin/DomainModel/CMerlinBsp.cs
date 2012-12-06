@@ -35,5 +35,22 @@ namespace Merlin.DomainModel
             if (unknown64BitValue01.Any(b => b != 0)) throw new InvalidOperationException("unknown64BitValid01 non-zero");
             if (unknown64BitValue02.Any(b => b != 0)) throw new InvalidOperationException("unknown64BitValid02 non-zero");
         }
+
+        public override void Serialise(MfcSerialiser archive)
+        {
+            base.Serialise(archive);
+
+            archive.SerialiseUInt16(unknown01);
+            archive.SerialiseUInt16(unknown02);
+            archive.SerialiseUInt16(unknown03);
+            archive.SerialiseUInt16(unknown04);
+
+            archive.SerialiseUInt16(0);
+
+            archive.SerialiseBytes(new byte[8]);
+            archive.SerialiseBytes(new byte[8]);
+
+            archive.SerialiseObjectNoHeader(new TrailingBytes());
+        }
     }
 }

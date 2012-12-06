@@ -20,10 +20,21 @@ namespace Merlin.DomainModel
 
         public List<List<PixelSpan>> PixelSpans { get; set; }
 
+        internal MipMap() { }
+
+        public MipMap(int level, Size imageDimensions)
+        {
+            ImageDimensions = imageDimensions;
+            ImageDimensionsMinusOne = new Size(ImageDimensions.Width - 1, ImageDimensions.Height - 1);
+            Level = (uint) level;
+        }
+
         public void UpdateImage(Bitmap bitmap, int mipmapLevel, bool hasTransparency, int transparentPaletteIndex)
         {
             if (bitmap.Size != ImageDimensions) throw new ArgumentException("Bitmap size must be " + ImageDimensions);
             bitmap.RotateFlip(RotateFlipType.Rotate270FlipY);
+            ImageDimensions = new Size(ImageDimensions.Height, ImageDimensions.Width);
+            ImageDimensionsMinusOne = new Size(ImageDimensionsMinusOne.Height, ImageDimensionsMinusOne.Width);
 
             var pixelSpans = new List<List<PixelSpan>>();
             MemoryStream data = new MemoryStream();
@@ -83,18 +94,36 @@ namespace Merlin.DomainModel
 
         public void UpdateImage(TexturePack containingPack, bool hasTransparency, Bitmap bitmap)
         {
+            if ((bitmap.Size.Width & (bitmap.Size.Width - 1)) != 0)
+            {
+                throw new ArgumentException("Bitmap width must be a power of two");
+            }
+            if ((bitmap.Size.Height & (bitmap.Size.Height - 1)) != 0)
+            {
+                throw new ArgumentException("Bitmap height must be a power of two");
+            }
+
+            int level = (int) Math.Log(Math.Max(bitmap.Size.Width, bitmap.Size.Height), 2);
+            Size mipmapSize = bitmap.Size;
             int mipLevel = 0;
             HasTransparency = hasTransparency;
-            foreach (var mipmap in Mipmaps)
+
+            Mipmaps = new List<MipMap>(level - 1);
+            for (int i = 0; i < level; i++)
             {
+                MipMap mipmap = new MipMap(level--, mipmapSize);
                 using (Bitmap scaledBitmap = ScaleBitmap(bitmap, mipLevel))
                 {
                     mipmap.UpdateImage(scaledBitmap, mipLevel, HasTransparency, containingPack.TransparentPaletteIndex);
                     mipLevel++;
                 }
+                Mipmaps.Add(mipmap);
+
+                mipmapSize = new Size(mipmapSize.Width >> 1, mipmapSize.Height >> 1);
             }
         }
 
+        /* TODO: Need a better scaling method. */
         private Bitmap ScaleBitmap(Bitmap bitmap, int mipLevel)
         {
             Bitmap newBitmap = new Bitmap(bitmap.Width >> mipLevel, bitmap.Height >> mipLevel, bitmap.PixelFormat);
