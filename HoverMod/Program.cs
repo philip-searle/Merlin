@@ -356,9 +356,9 @@ namespace DebugProject
             foreach (var location in maze.Locations)
             {
                 output.WriteLine("<g class='location-{0}'>", location.Name.Split(new char[] { '_' })[0]);
-                output.WriteLine("\t<use xlink:href='#facing-{0}' x='{1}' y='{2}' />", location.FacingDirection.ToString(), location.X / 10, location.Y / 10); 
-                output.WriteLine("\t<circle r='{3}' cx='{0}' cy='{1}' title='{2}' />", location.X / 10, location.Y / 10, location.Name, (location.Z / 10.0 - minZ) / (maxZ - minZ) * 10.0 + 8);
-                output.WriteLine("\t<text x='{0}' y='{1}'>{2}</text>", location.X / 10 + 9, location.Y / 10, location.Name);
+                output.WriteLine("\t<use xlink:href='#facing-{0}' x='{1}' y='{2}' />", location.FacingDirection.ToString(), location.X * SVG_SCALE_FACTOR, location.Y * SVG_SCALE_FACTOR);
+                output.WriteLine("\t<circle r='{3}' cx='{0}' cy='{1}' title='{2}' />", location.X * SVG_SCALE_FACTOR, location.Y * SVG_SCALE_FACTOR, location.Name, (location.Z * SVG_SCALE_FACTOR - minZ) / (maxZ - minZ) * SVG_SCALE_FACTOR + 8);
+                output.WriteLine("\t<text x='{0}' y='{1}'>{2}</text>", location.X * SVG_SCALE_FACTOR + 9, location.Y * SVG_SCALE_FACTOR, location.Name);
                 output.WriteLine("</g>");
             }
 
