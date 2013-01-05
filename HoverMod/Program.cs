@@ -328,13 +328,13 @@ namespace DebugProject
             int staticIndex = 0;
             foreach (var merlinStatic in maze.Geometry)
             {
-                string cssClass = merlinStatic.unknown20 == 0 ? "unwall" :
-                    merlinStatic.unknown18 == 1 || merlinStatic.unknown19 == 1 ? "decal" :
-                            string.IsNullOrWhiteSpace(merlinStatic.unknown08) != string.IsNullOrWhiteSpace(merlinStatic.unknown09) ? "step" :
+                string cssClass = merlinStatic.EnableCollision == 0 ? "unwall" :
+                    merlinStatic.LeftTextureIsTransparent == 1 || merlinStatic.RightTextureIsTransparent == 1 ? "decal" :
+                            string.IsNullOrWhiteSpace(merlinStatic.LeftTopTexture) != string.IsNullOrWhiteSpace(merlinStatic.RightTopTexture) ? "step" :
                                 "wall";
                 output.WriteLine("<line x1='{0}' y1='{1}' x2='{2}' y2='{3}' class='{11}' id='static-{4:x4}' title='{5,8}\t{6,8}\t{7,8}\t{8,8}\t{9,8}\t{10,8}'>",
                     merlinStatic.X1 * SVG_SCALE_FACTOR, merlinStatic.Y1 * SVG_SCALE_FACTOR, merlinStatic.X2 * SVG_SCALE_FACTOR, merlinStatic.Y2 * SVG_SCALE_FACTOR,
-                    staticIndex++, merlinStatic.unknown08, merlinStatic.unknown09, merlinStatic.unknown10, merlinStatic.unknown11, merlinStatic.unknown12, merlinStatic.unknown13,
+                    staticIndex++, merlinStatic.LeftTopTexture, merlinStatic.RightTopTexture, merlinStatic.LeftWallTexture, merlinStatic.RightWallTexture, merlinStatic.LeftBottomTexture, merlinStatic.RightBottomTexture,
                     cssClass);
                 output.WriteLine("<set attributeName='stroke' to='pink' begin='showwalls.click' />");
                 output.WriteLine("</line>");
@@ -342,15 +342,15 @@ namespace DebugProject
             staticIndex = 0;
             foreach (var merlinStatic in maze.Geometry)
             {
-                output.WriteLine("<!-- Static strings {6:x4}: {0,8}\t{1,8}\t{2,8}\t{3,8}\t{4,8}\t{5,8} -->", merlinStatic.unknown08, merlinStatic.unknown09, merlinStatic.unknown10, merlinStatic.unknown11, merlinStatic.unknown12, merlinStatic.unknown13, staticIndex++);
+                output.WriteLine("<!-- Static strings {6:x4}: {0,8}\t{1,8}\t{2,8}\t{3,8}\t{4,8}\t{5,8} -->", merlinStatic.LeftTopTexture, merlinStatic.RightTopTexture, merlinStatic.LeftWallTexture, merlinStatic.RightWallTexture, merlinStatic.LeftBottomTexture, merlinStatic.RightBottomTexture, staticIndex++);
             }
             staticIndex = 0;
             foreach (var merlinStatic in maze.Geometry)
             {
                 output.WriteLine("<!-- Static numerics {0:x4}: {1:x4}\t{2:x4}\t{3:x4}\t{4:x4}\t{5:x2}\t{6:x2}\t{7:x2}\t{8:x4}\t{9:x2}\t{10:x4}\t{11:x4}\t -->", staticIndex++,
-                    merlinStatic.BottomZ, merlinStatic.TopZ, merlinStatic.unknown16, merlinStatic.unknown17, merlinStatic.unknown18,
-                    merlinStatic.unknown19, merlinStatic.unknown20, merlinStatic.unknown21, merlinStatic.unknown22, merlinStatic.unknown23,
-                    merlinStatic.unknown24);
+                    merlinStatic.BottomZ, merlinStatic.TopZ, merlinStatic.unknown16, merlinStatic.unknown17, merlinStatic.LeftTextureIsTransparent,
+                    merlinStatic.RightTextureIsTransparent, merlinStatic.EnableCollision, merlinStatic.unknown21, merlinStatic.unknown22, merlinStatic.LeftTextureOffset,
+                    merlinStatic.RightTextureOffset);
             }
 
             foreach (var location in maze.Locations)
