@@ -86,6 +86,12 @@ namespace Merlin.Mfc
 
             mfcObject.Serialise(this);
         }
+
+        internal ushort GetSerialisedClassIndexHack<T>(T item) where T : MfcObject
+        {
+            MfcClass mfcClass = _classRegistry.GetMfcClass(item.GetType());
+            return (ushort)(_loadedClasses.IndexOf(mfcClass) | ClassTag);
+        }
     }
 
     internal static class BinaryWriterExtensions
@@ -146,7 +152,7 @@ namespace Merlin.Mfc
             stream.Write((uint)length);
         }
 
-        public static void SerialiseBuggyList<T>(this MfcSerialiser archive, List<T> list) where T : MfcObject
+        public static void SerialiseBuggyList<T>(this MfcSerialiser archive, List<T> list, ushort hack) where T : MfcObject
         {
             if (list.Count > ushort.MaxValue)
             {
@@ -155,9 +161,19 @@ namespace Merlin.Mfc
 
             archive.SerialiseUInt16((ushort)list.Count);
 
+            bool first = true;
             foreach (var item in list)
             {
-                archive.SerialiseObject(item);
+                if (first)
+                {
+                    archive.SerialiseObject(item);
+                    first = false;
+                }
+                else
+                {
+                    archive.SerialiseUInt16((ushort)(archive.GetSerialisedClassIndexHack(item) + hack));
+                    archive.SerialiseObjectNoHeader(item);
+                }
             }
         }
     }

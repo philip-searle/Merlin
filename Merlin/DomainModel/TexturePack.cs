@@ -67,7 +67,7 @@ namespace Merlin.DomainModel
                 archive.SerialiseByte(0); /* Never any alpha, transparency is handled by PixelSpans */
             }
 
-            archive.SerialiseBuggyList(Textures);
+            archive.SerialiseBuggyList(Textures, 0);
             archive.SerialiseObjectNoHeader(new TrailingBytes());
         }
     }

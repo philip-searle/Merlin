@@ -58,10 +58,15 @@ namespace Merlin.DomainModel
             archive.SerialiseUInt16(MaxX);
             archive.SerialiseUInt16(MaxY);
 
-            archive.SerialiseBuggyList(Geometry);
+            ushort hack = 0;
+            archive.SerialiseBuggyList(Geometry, hack);
             archive.SerialiseUInt16(0);
-            archive.SerialiseBuggyList(Locations);
-            archive.SerialiseBuggyList(Bsp);
+
+            hack += (ushort)Geometry.Count;
+            archive.SerialiseBuggyList(Locations, hack);
+
+            hack += (ushort)Locations.Count;
+            archive.SerialiseBuggyList(Bsp, hack);
         }
     }
 }
