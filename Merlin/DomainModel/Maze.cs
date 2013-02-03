@@ -31,7 +31,7 @@ namespace Merlin.DomainModel
 
         public List<CMerlinStatic> Geometry { get; set; }
         public List<CMerlinLocation> Locations { get; set; }
-        public List<CMerlinBsp> Bsp;
+        public List<CMerlinBsp> Bsp { get; set; }
 
         override public void Deserialise(MfcDeserialiser archive)
         {

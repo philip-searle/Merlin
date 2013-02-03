@@ -3,29 +3,74 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Merlin.Mfc;
+using System.ComponentModel;
 
 namespace Merlin.DomainModel
 {
     [MfcSerialisable("CMerlinStatic")]
     public class CMerlinStatic : CMerlinLine
     {
-        public string LeftTopTexture; // left side: texture top of linedef to top/bottom of screen (if below/above)
-        public string RightTopTexture; // right side: texture top of linedef to top/bottom of screen (if below/above)
-        public string LeftWallTexture; // Wall texture, left side
-        public string RightWallTexture; // Wall texture, right side
-        public string LeftBottomTexture; // left side: texture bottom of linedef to top/bottom of screen (if below/above)
-        public string RightBottomTexture; // right side: texture top of linedef to top/bottom of screen (if below/above)
-        public ushort BottomZ;
-        public ushort TopZ;
-        public ushort unknown16;
-        public ushort unknown17;
-        public byte LeftTextureIsTransparent;  // left side: if set, render wall texture with transparency
-        public byte RightTextureIsTransparent;  // right side: if set, render wall texture with transparency
-        public byte EnableCollision;  // If set, enable collision. If not set, no collision.
-        public ushort unknown21;
-        public byte unknown22;
-        public ushort LeftTextureOffset; // left side: texture offset in pixels
-        public ushort RightTextureOffset; // right side: texture offset in pixels
+        // left side: texture top of linedef to top/bottom of screen (if below/above)
+        [Category("Texture, left")]
+        public string LeftTopTexture { get; set; }
+
+        // right side: texture top of linedef to top/bottom of screen (if below/above)
+        [Category("Texture, right")]
+        public string RightTopTexture { get; set; }
+
+        // Wall texture, left side
+        [Category("Texture, left")]
+        public string LeftWallTexture { get; set; }
+
+        // Wall texture, right side
+        [Category("Texture, right")]
+        public string RightWallTexture { get; set; }
+
+        // left side: texture bottom of linedef to top/bottom of screen (if below/above)
+        [Category("Texture, left")]
+        public string LeftBottomTexture { get; set; }
+
+        // right side: texture top of linedef to top/bottom of screen (if below/above)
+        [Category("Texture, right")]
+        public string RightBottomTexture { get; set; }
+
+        [Category("Wall")]
+        public ushort BottomZ { get; set; }
+
+        [Category("Wall")]
+        public ushort TopZ { get; set; }
+
+        [Category("Unknown")]
+        public ushort unknown16 { get; set; }
+
+        [Category("Unknown")]
+        public ushort unknown17 { get; set; }
+
+        // left side: if set, render wall texture with transparency
+        [Category("Texture, left")]
+        public byte LeftTextureIsTransparent { get; set; }
+
+        // right side: if set, render wall texture with transparency
+        [Category("Texture, right")]
+        public byte RightTextureIsTransparent { get; set; }
+
+        // If set, enable collision. If not set, no collision.
+        [Category("Wall")]
+        public byte EnableCollision { get; set; } 
+
+        [Category("Unknown")]
+        public ushort unknown21 { get; set; }
+
+        [Category("Unknown")]
+        public byte unknown22 { get; set; }
+
+        // left side: texture offset in pixels
+        [Category("Texture, left")]
+        public ushort LeftTextureOffset { get; set; }
+
+        // right side: texture offset in pixels
+        [Category("Texture, right")]
+        public ushort RightTextureOffset { get; set; }
 
         public override void Deserialise(MfcDeserialiser archive)
         {
@@ -48,6 +93,11 @@ namespace Merlin.DomainModel
             unknown22 = archive.DeserialiseByte();
             LeftTextureOffset = archive.DeserialiseUInt16();
             RightTextureOffset = archive.DeserialiseUInt16();
+
+            System.Diagnostics.Debug.Assert(unknown16 == 0);
+            System.Diagnostics.Debug.Assert(unknown17 == 0);
+            System.Diagnostics.Debug.Assert(unknown21 == 5);
+            System.Diagnostics.Debug.Assert(unknown22 == 0);
         }
 
         public override void Serialise(MfcSerialiser archive)

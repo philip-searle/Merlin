@@ -9,10 +9,10 @@ namespace Merlin.DomainModel
     [MfcSerialisable("CMerlinBSP")]
     public class CMerlinBsp : CMerlinLine
     {
-        public ushort unknown01; // CMerlinBsp ID
-        public ushort unknown02; // Index of CMerlinStatic to check position against
-        public ushort unknown03; // ID of CMerlinBsp on the left of the line (0xffff if none)
-        public ushort unknown04; // ID of CMerlinBsp on the right of the line (0xffff if none)
+        public ushort unknown01 { get; set; } // CMerlinBsp ID
+        public ushort unknown02 { get; set; } // Index of CMerlinStatic to check position against
+        public ushort unknown03 { get; set; } // ID of CMerlinBsp on the left of the line (0xffff if none)
+        public ushort unknown04 { get; set; } // ID of CMerlinBsp on the right of the line (0xffff if none)
 
         public override void Deserialise(MfcDeserialiser archive)
         {
