@@ -1,0 +1,4 @@
+Menu ID 34007 toggles the display of AI debug visualizations on the minimap.
+
+The beacon node graph is displayed with yellow lines.
+The current target of a robot is highlighted with a yellow diamond.

@@ -1,0 +1,33 @@
+Menu ID 34009 displays dialog ID 149.
+Seems to allow editing of robot AI/movement parmeters.
+Dialog requires controls with IDs:
+416h 1046
+41fh 1055
+413h 1043
+419h 1049
+42bh 1067
+428h 1064
+425h 1061
+422h 1058
+41ch 1052
+418h 1048
+421h 1057
+415h 1045
+41bh 1051
+42dh 1069
+42ah 1066
+427h 1063
+424h 1060
+41eh 1054
+417h 1047
+420h 1056
+414h 1044
+41ah 1050
+42ch 1068
+429h 1065
+426h 1062
+423h 1059
+41dh 1053
+Button with ID 4 saves params to registry.
+Button with ID 3 clears registry settings.
+IDOK and IDCANCEL close the dialog.

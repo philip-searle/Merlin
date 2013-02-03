@@ -1,0 +1,20 @@
+
+34012 - dialog, edits unknown values
+34006 - toggles something? does nothing?
+34007 - Enables AI display on minimap. The beacon graph is shown in yellow; the current target beacon is highlighted with a yellow diamond.
+34009 - dialog, edits robot vehicles
+34008 - dialog, edits human vehicle
+34031 - modal dialog? does nothing
+32821 - Displays WaveMix debug dialog.
+57600 - Starts a new game
+57601 - open document? crashes
+34010 - Toggles debug status bar.
+34002 - ??? does nothing
+34021 - ??? "
+34022 - ??? "
+34023 - ??? "
+34024 - ??? "
+34025 - ??? "
+34026 - ??? "
+34027 - ??? "
+34028 - ??? "

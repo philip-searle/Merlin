@@ -1,0 +1,11 @@
+Menu ID 34012 displays dialog ID 130.
+Allows editing some parameters, not sure what.
+Dialog requires controls with IDs:
+3f0h 1008
+3efh 1007
+3f2h 1010
+3eeh 1006
+3f3h 1011
+3f9h 1017
+3fbh 1019
+3fah 1018
